@@ -1,0 +1,14 @@
+{
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/connect-with-me.html"
+    },
+    {
+      "source": "/text_to_binary_visualizer",
+      "destination": "/text_to_binary/text-to-binary-visualizer.html"
+    }
+  ]
+}

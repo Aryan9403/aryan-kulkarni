@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Binary Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f3f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+            position: relative;
+        }
+        
+        .container {
+            background: #faf8f6;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        
+        h1 {
+            color: #3d3d3d;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #8b7355;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: #c4a090;
+            border-bottom-color: #c4a090;
+        }
+        
+        .tab-btn:hover {
+            color: #c4a090;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #c4a090;
+        }
+        
+        .hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 6px;
+        }
+        
+        .output-section {
+            margin-top: 30px;
+        }
+        
+        .output-group {
+            margin-bottom: 20px;
+        }
+        
+        .output-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .binary-output {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            color: #333;
+            border-left: 4px solid #c4a090;
+            min-height: 60px;
+            line-height: 1.6;
+        }
+        
+        .breakdown {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .char-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            font-family: monospace;
+            align-items: center;
+            animation: slideIn 0.3s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .char-row:last-child {
+            border-bottom: none;
+        }
+        
+        .char-col {
+            flex: 1;
+        }
+        
+        .char-col.binary {
+            color: #c4a090;
+            font-weight: 600;
+        }
+        
+        .char-col.ascii {
+            color: #764ba2;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #0288d1;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: #01579b;
+            margin-top: 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 30px 0;
+        }
+        
+        .floating-symbols {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .symbol {
+            position: absolute;
+            font-size: 48px;
+            opacity: 0.15;
+            font-weight: bold;
+            color: #8b7355;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Binary & Text Converter</h1>
+        <p class="subtitle"></p>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="text-to-binary">Text → Binary</button>
+            <button class="tab-btn" data-tab="binary-to-text">Binary → Text</button>
+        </div>
+        
+        <!-- Text to Binary Tab -->
+        <div id="text-to-binary" class="tab-content active">
+            <div class="input-group">
+                <label for="textInput">Enter your text:</label>
+                <textarea id="textInput" placeholder="Type something... Press Enter to reveal!"></textarea>
+                <div class="hint">💡 Press Enter to reveal the ASCII & binary breakdown</div>
+            </div>
+            
+            <div class="output-section">
+                <div class="output-group">
+                    <div class="output-label">Binary Output:</div>
+                    <div class="binary-output" id="binaryOutput">
+                        <div class="empty-state">Enter text and press Enter to see binary...</div>
+                    </div>
+                </div>
+                
+                <div class="output-group">
+                    <div class="output-label">Character Breakdown:</div>
+                    <div class="breakdown" id="breakdown">
+                        <div class="empty-state">Press Enter to reveal ASCII & binary values...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>How it works:</strong> Each character is converted to its ASCII decimal value, then that value is converted to 8-bit binary representation.
+            </div>
+        </div>
+        
+        <!-- Binary to Text Tab -->
+        <div id="binary-to-text" class="tab-content">
+            <div class="input-group">
+                <label for="binaryInput">Enter binary (space-separated):</label>
+                <textarea id="binaryInput" placeholder="Example: 01001000 01100101 01101100 01101100 01101111&#10;Press Enter to reveal the text!"></textarea>
+                <div class="hint">💡 Use 8-bit binary separated by spaces. Press Enter to reveal!</div>
+            </div>
+            
+            <div class="output-section">
+                <div class="output-group">
+                    <div class="output-label">Text Output:</div>
+                    <div class="binary-output" id="textOutput">
+                        <div class="empty-state">Enter binary and press Enter to see text...</div>
+                    </div>
+                </div>
+                
+                <div class="output-group">
+                    <div class="output-label">Character Breakdown:</div>
+                    <div class="breakdown" id="breakdownBinary">
+                        <div class="empty-state">Press Enter to reveal ASCII & text values...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>How it works:</strong> Each 8-bit binary sequence is converted to its decimal (ASCII) value, then to the corresponding character.
+            </div>
+        </div>
+    </div>
+    
+    <div class="floating-symbols" id="symbolsContainer"></div>
+    
+    <script>
+        const textInput = document.getElementById('textInput');
+        const binaryInput = document.getElementById('binaryInput');
+        const binaryOutput = document.getElementById('binaryOutput');
+        const breakdown = document.getElementById('breakdown');
+        const textOutput = document.getElementById('textOutput');
+        const breakdownBinary = document.getElementById('breakdownBinary');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Tab switching
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+        
+        function textToBinary(text) {
+            return text.split('').map(char => {
+                const ascii = char.charCodeAt(0);
+                return ascii.toString(2).padStart(8, '0');
+            }).join(' ');
+        }
+        
+        function revealTextToBinary() {
+            const text = textInput.value;
+            
+            if (text.length === 0) {
+                binaryOutput.innerHTML = '<div class="empty-state">No text entered...</div>';
+                breakdown.innerHTML = '<div class="empty-state">No text to analyze...</div>';
+                return;
+            }
+            
+            // Update binary output
+            binaryOutput.textContent = textToBinary(text);
+            
+            // Update character breakdown with staggered animation
+            const chars = text.split('');
+            breakdown.innerHTML = chars.map((char, index) => {
+                const ascii = char.charCodeAt(0);
+                const binary = ascii.toString(2).padStart(8, '0');
+                const display = char === ' ' ? '(space)' : char;
+                
+                return `
+                    <div class="char-row" style="animation-delay: ${index * 0.05}s">
+                        <div class="char-col">'${display}'</div>
+                        <div class="char-col ascii">ASCII ${ascii}</div>
+                        <div class="char-col binary">${binary}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function binaryToText(binaryStr) {
+            const binaries = binaryStr.trim().split(/\s+/);
+            try {
+                return binaries.map(bin => {
+                    const decimal = parseInt(bin, 2);
+                    if (isNaN(decimal) || bin.length !== 8) {
+                        throw new Error('Invalid binary');
+                    }
+                    return String.fromCharCode(decimal);
+                }).join('');
+            } catch {
+                return null;
+            }
+        }
+        
+        function revealBinaryToText() {
+            const binary = binaryInput.value;
+            
+            if (binary.trim().length === 0) {
+                textOutput.innerHTML = '<div class="empty-state">No binary entered...</div>';
+                breakdownBinary.innerHTML = '<div class="empty-state">No binary to analyze...</div>';
+                return;
+            }
+            
+            const text = binaryToText(binary);
+            
+            if (text === null) {
+                textOutput.innerHTML = '<div class="empty-state" style="color: red;">Invalid binary format. Use 8-bit sequences separated by spaces.</div>';
+                breakdownBinary.innerHTML = '<div class="empty-state">-</div>';
+                return;
+            }
+            
+            // Update text output
+            textOutput.textContent = text;
+            
+            // Update character breakdown
+            const binaries = binary.trim().split(/\s+/).filter(b => b.length === 8);
+            breakdownBinary.innerHTML = binaries.map((bin, index) => {
+                const decimal = parseInt(bin, 2);
+                const char = String.fromCharCode(decimal);
+                const display = char === ' ' ? '(space)' : char;
+                
+                return `
+                    <div class="char-row" style="animation-delay: ${index * 0.05}s">
+                        <div class="char-col">${bin}</div>
+                        <div class="char-col ascii">ASCII ${decimal}</div>
+                        <div class="char-col binary">'${display}'</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        textInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                revealTextToBinary();
+            }
+        });
+        
+        binaryInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                revealBinaryToText();
+            }
+        });
+        
+        const symbolsContainer = document.getElementById('symbolsContainer');
+        const symbols = ['+', '×', '+', '×', '+', '×', '+', '×', '+', '×', '+', '×', '+', '×', '+', '×'];
+        
+        class FloatingSymbol {
+            constructor(symbol) {
+                this.element = document.createElement('div');
+                this.element.className = 'symbol';
+                this.element.textContent = symbol;
+                
+                this.x = Math.random() * window.innerWidth;
+                this.y = Math.random() * window.innerHeight;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                
+                // Ensure velocity is never zero
+                if (Math.abs(this.vx) < 0.2) this.vx = 0.3;
+                if (Math.abs(this.vy) < 0.2) this.vy = 0.3;
+                
+                this.size = 40 + Math.random() * 20;
+                
+                this.element.style.fontSize = this.size + 'px';
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+                
+                symbolsContainer.appendChild(this.element);
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Bounce off edges
+                if (this.x < 0 || this.x > window.innerWidth) {
+                    this.vx *= -1;
+                    this.x = Math.max(0, Math.min(window.innerWidth, this.x));
+                }
+                if (this.y < 0 || this.y > window.innerHeight) {
+                    this.vy *= -1;
+                    this.y = Math.max(0, Math.min(window.innerHeight, this.y));
+                }
+                
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+        }
+        
+        const floatingSymbols = symbols.map(sym => new FloatingSymbol(sym));
+        
+        function animate() {
+            floatingSymbols.forEach(sym => sym.update());
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            floatingSymbols.forEach(sym => {
+                if (sym.x > window.innerWidth) sym.x = window.innerWidth;
+                if (sym.y > window.innerHeight) sym.y = window.innerHeight;
+            });
+        });
+    </script>
+</body>
+</html>
