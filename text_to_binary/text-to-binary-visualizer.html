@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Binary Visualizer</title>
+    <link rel="icon" id="favicon" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -215,6 +219,18 @@
             padding: 30px 0;
         }
         
+        .logo {
+            position: fixed;
+            top: 16px;
+            left: 24px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #1a1a1a;
+            z-index: 10;
+            line-height: 1;
+            text-decoration: none;
+        }
+
         .floating-symbols {
             position: fixed;
             top: 0;
@@ -235,6 +251,7 @@
     </style>
 </head>
 <body>
+    <a href="../connect-with-me.html" class="logo">Aryan Kulkarni</a>
     <div class="container">
         <h1>🔄 Binary & Text Converter</h1>
         <p class="subtitle"></p>
@@ -489,6 +506,22 @@
                 if (sym.x > window.innerWidth) sym.x = window.innerWidth;
                 if (sym.y > window.innerHeight) sym.y = window.innerHeight;
             });
+        });
+
+        // Generate favicon using Press Start 2P font
+        document.fonts.ready.then(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#f5f3f0';
+            ctx.fillRect(0, 0, 64, 64);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.font = '40px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('A', 32, 36);
+            document.getElementById('favicon').href = canvas.toDataURL('image/png');
         });
     </script>
 </body>
