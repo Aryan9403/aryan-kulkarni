@@ -196,13 +196,19 @@
         .required { color: #d4a574; }
 
         .tool-link {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 24px;
             color: #8b7355;
             font-size: 13px;
             text-decoration: none;
             z-index: 10;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+
+        .tool-link.visible {
+            opacity: 1;
         }
 
         .tool-link:hover {
@@ -365,6 +371,7 @@
             const nameEl = document.getElementById('name');
             const formWrapper = document.getElementById('formWrapper');
             const logo = document.getElementById('logo');
+            const toolLink = document.querySelector('.tool-link');
             let i = 0;
 
             function type() {
@@ -380,6 +387,7 @@
                             document.body.style.overflow = 'auto';
                             formWrapper.classList.add('visible');
                             logo.classList.add('visible');
+                            toolLink.classList.add('visible');
                         }, 500);
                     }, 800);
                 }
