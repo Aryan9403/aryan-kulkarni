@@ -220,7 +220,7 @@
         }
         
         .logo {
-            position: fixed;
+            position: absolute;
             top: 16px;
             left: 24px;
             font-family: 'Press Start 2P', monospace;
@@ -229,6 +229,38 @@
             z-index: 10;
             line-height: 1;
             text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                padding: 64px 12px 24px;
+            }
+
+            .logo {
+                font-size: 8px;
+                top: 14px;
+                left: 14px;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .tab-btn {
+                padding: 10px 14px;
+                font-size: 13px;
+            }
+
+            .char-row {
+                grid-template-columns: 70px 1fr 1fr;
+                gap: 8px;
+                font-size: 11px;
+            }
         }
 
         .floating-symbols {
